@@ -18,7 +18,8 @@ public:
     bool testingMinimax;
 	
 private:
-	Side pside;
+	Side own_side;
+	Side other_side;
 	Board board;
 };
 

@@ -18,6 +18,18 @@ Board::Board() {
 Board::~Board() {
 }
 
+
+/* Returns a heuristic based on current configuration */
+int Board::heuristic(Side side) {
+	if (side == WHITE) {
+		return count(WHITE) - count(BLACK);
+	} 
+	else 
+	{
+		return count(BLACK) - count(WHITE);
+	}
+}
+
 /*
  * Returns a copy of this board.
  */
