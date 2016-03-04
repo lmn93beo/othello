@@ -76,6 +76,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     
     int max_val = -1000000;
     int best_move = -1;
+	int value;
     
     // Go through the moves...
     for (unsigned int i = 0; i < possible.size(); i++) {
@@ -92,10 +93,19 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         for (unsigned int j = 0; j < op_choices.size(); j++) {
             Board *board_1 = board_0->copy();
             board_1->doMove(op_choices[j], other_side);
-            int value = board_1->heuristic(own_side);
-            if (value < min_val) {
-                min_val = value;
-            }
+			
+			
+			if (testingMinimax) {
+				value = board_1->count(own_side) - board_1->count(other_side);
+			}
+			else {
+				value = board_1->heuristic(own_side);
+			}
+			
+			if (value < min_val) {
+				min_val = value;
+			}
+            
         }
         
         // Update max_val if necessary
@@ -112,7 +122,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     
     // Make the move and return
     board->doMove(possible[best_move], own_side);
-    sleep(2);
+    //sleep(2);
       
     // Clean up
     for (unsigned int i = 0; i < possible.size(); i++) {
