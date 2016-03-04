@@ -16,11 +16,12 @@ public:
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
+	void setBoard(char data[]);
 	
 private:
 	Side own_side;
 	Side other_side;
-	Board board;
+	Board *board;
 };
 
 #endif

@@ -3,6 +3,8 @@
 
 #include <bitset>
 #include "common.h"
+#include <vector>
+
 using namespace std;
 
 class Board {
@@ -29,7 +31,8 @@ public:
     int countBlack();
     int countWhite();
 	
-	int heuristic(Side side);
+	float heuristic(Side side);
+	vector<Move*> legalMoves(Side side);
 
     void setBoard(char data[]);
 };

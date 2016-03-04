@@ -1,4 +1,5 @@
 #include "board.h"
+#include <cstdio>
 
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
@@ -10,6 +11,7 @@ Board::Board() {
     taken.set(4 + 8 * 4);
     black.set(4 + 8 * 3);
     black.set(3 + 8 * 4);
+    //printf("Done?\n");
 }
 
 /*
@@ -20,14 +22,55 @@ Board::~Board() {
 
 
 /* Returns a heuristic based on current configuration */
-int Board::heuristic(Side side) {
+float Board::heuristic(Side side) {
+    // Count corners
+    int corners = get(side, 0, 0) + get(side, 0, 7) + get(side, 7, 0) + get(side, 7, 7);
+    
+    // Count next to corners
+    int corner_adj = get(side, 0, 1) + get(side, 1, 0) + get(side, 1, 1) +
+        get(side, 0, 6) + get(side, 1, 7) + get(side, 1, 6) +
+        get(side, 6, 0) + get(side, 7, 1) + get(side, 6, 1) +
+        get(side, 6, 6) + get(side, 6, 7) + get(side, 7, 6);
+    
+    // Count sides and next to sides
+    int sides = 0;
+    int intermediates = 0;
+    for (int i = 1; i < 7; i++) {
+        sides += get(side, 0, i) + get(side, 7, i) + get(side, i, 0) + get(side, i, 7);
+        intermediates += get(side, 1, i) + get(side, 6, i) + get(side, i, 1) + get(side, i, 6);
+    }
+    
+    
+    
+    int difference;
+    
 	if (side == WHITE) {
-		return count(WHITE) - count(BLACK);
+		difference = count(WHITE) - count(BLACK);
 	} 
 	else 
 	{
-		return count(BLACK) - count(WHITE);
+		difference = count(BLACK) - count(WHITE);
 	}
+    
+    return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+}
+
+/* Returns a vector of legal moves for side */
+vector<Move*> Board::legalMoves(Side side) {
+    vector<Move*> move_list;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *move = new Move(i, j);
+            if (checkMove(move, side)) {
+                //printf("Yup %d %d\n", i, j);
+                move_list.push_back(move);
+            }
+        }
+    }
+    for (unsigned int i = 0; i < move_list.size(); i++) {
+        //printf("Move: %d, %d\n", move_list[i]->x, move_list[i]->y);
+    }
+    return move_list;
 }
 
 /*
