@@ -65,85 +65,22 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	
 	// Do minimax
 	float val = myNode->minimax(5, true);
-	//cerr << val << endl;
+	cerr << val << endl;
 	
 	// Get a possible move
 	Move *best = myNode->best_move(5, val);
 	
-	sleep(1);
+	//sleep(1);
 	
 	board->doMove(best, own_side);
+    
+    // Clean up
+    //myNode->deleteNode();
+    delete myNode;
+    
+    
 	return best;
 	
-    /*
-    // Get the list of available moves
-    vector<Move*> possible = board->legalMoves(own_side);
-    //cerr << "Size is " << possible.size() << endl;
-    
-    //cerr << "Black: " << board->countBlack() << endl;
-    //cerr << "White: " << board->countWhite() << endl;
-    
-    if (possible.size() == 0) {
-        return NULL;
-    }
-    
-    int max_val = -1000000;
-    int best_move = -1;
-	int value;
-    
-    // Go through the moves...
-    for (unsigned int i = 0; i < possible.size(); i++) {
-        Board *board_0 = board->copy();
-        
-        // Make the move
-        board_0->doMove(possible[i], own_side);
-        
-        // Find the opponent's options
-        vector<Move*> op_choices = board_0->legalMoves(other_side);
-        
-        // Find the min value of the choices
-        int min_val = 10000000;
-        for (unsigned int j = 0; j < op_choices.size(); j++) {
-            Board *board_1 = board_0->copy();
-            board_1->doMove(op_choices[j], other_side);
-			
-			
-			value = board_1->heuristic(own_side);
-			
-			
-			if (value < min_val) {
-				min_val = value;
-			}
-            
-        }
-        
-        // Update max_val if necessary
-        if (min_val > max_val) {
-            max_val = min_val;
-            best_move = i;
-        }
-        
-        for (unsigned int i = 0; i < op_choices.size(); i++) {
-            delete op_choices[i];
-        }
-    
-    }
-    
-    // Make the move and return
-    board->doMove(possible[best_move], own_side);
-    sleep(1);
-      
-    // Clean up
-    for (unsigned int i = 0; i < possible.size(); i++) {
-        if ((int)i != best_move) {
-            delete possible[i];
-        }
-    }
-    
-    
-    
-    return possible[best_move];
-	*/
 }
 
 // Set the board for the player

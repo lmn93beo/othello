@@ -73,11 +73,14 @@ vector<Move*> Board::legalMoves(Side side) {
                 //printf("Yup %d %d\n", i, j);
                 move_list.push_back(move);
             }
+            else {
+                delete move;
+            }
         }
     }
-    for (unsigned int i = 0; i < move_list.size(); i++) {
+    //for (unsigned int i = 0; i < move_list.size(); i++) {
         //printf("Move: %d, %d\n", move_list[i]->x, move_list[i]->y);
-    }
+    //}
     return move_list;
 }
 
@@ -107,6 +110,23 @@ void Board::set(Side side, int x, int y) {
 bool Board::onBoard(int x, int y) {
     return(0 <= x && x < 8 && 0 <= y && y < 8);
 }
+
+int Board::numMoves(Side side) {
+    int count = 0;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *move = new Move(i, j);
+            if (checkMove(move, side)) {
+                count += 1;
+            }
+            delete move;
+        }
+    }
+    
+    
+    return count;
+}
+    
 
  
 /*
@@ -259,9 +279,19 @@ Node::Node(Side side, Side master, Board *newboard)
         //printf("diff 0 of board = %f\n", board->heuristic(own_side));
         //value = newboard->heuristic(master);
     }
-    
-/** @brief Insert a node with a given board configuration as a child
 
+Node::~Node() {
+    delete board;
+    for (unsigned int i = 0; i < children.size(); i++) {
+        if (children[i] != NULL) {
+            delete children[i];
+        }
+        //delete children[i];
+    }
+    
+}
+
+/** @brief Insert a node with a given board configuration as a child
 */
 void Node::insert(Board *board) {
     Node *newnode = new Node(other_side, master_side, board);
@@ -279,6 +309,11 @@ void Node::getNextLayer()
         Board *next_board = board->copy();
         next_board->doMove(possible[i], own_side);
         insert(next_board);
+    }
+    
+    // Clean up
+    for (unsigned int i = 0; i < possible.size(); i++) {
+        delete possible[i];
     }
 }
 
@@ -304,7 +339,7 @@ void Node::printNode() {
 }
 
 float Node::minimax(int depth, bool maximizingPlayer) {
-	if (depth == 0 || board->legalMoves(own_side).size() == 0) {
+	if (depth == 0 || board->numMoves(own_side)== 0) {
 		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
 		return board->heuristic(master_side);
 	}
@@ -316,6 +351,7 @@ float Node::minimax(int depth, bool maximizingPlayer) {
 			float v = children[i]->minimax(depth - 1, false);
 			bestValue = max(bestValue, v);
 		}
+        value = bestValue;
 		//printf("Depth is %d, best value is %f\n", depth, bestValue);
 		return bestValue;
 	} else {
@@ -325,6 +361,7 @@ float Node::minimax(int depth, bool maximizingPlayer) {
 			float v = children[i]->minimax(depth - 1, true);
 			bestValue = min(bestValue, v);
 		}
+        value = bestValue;
 		//printf("Depth is %d, best value is %f\n", depth, bestValue);
 		return bestValue;
 	}
@@ -333,22 +370,31 @@ float Node::minimax(int depth, bool maximizingPlayer) {
 	
 }
 
+float Node::getVal() {
+    return value;
+}
+
 Move* Node::best_move(int depth, float best_val) {
 	// Get the list of available moves
     vector<Move*> possible = board->legalMoves(own_side);
 	
-	//printf("%d\n", (int)possible.size());
-	
+	printf("%d\n", (int)possible.size());
+	Move *bestMove = NULL;
+    
 	if (possible.size() == 0) {
 		return NULL;
 	} else {
 		for (unsigned int i = 0; i < possible.size(); i++) {
-			if (abs(children[i]->minimax(depth - 1, false) - best_val) < 0.01) {
-				return possible[i];
+            printf("Value of child: %f \n", children[i]->value);
+			if (bestMove == NULL && abs(children[i]->value - best_val) < 0.00001) {
+				bestMove = possible[i];
 			}
+            else {
+                delete possible[i];
+            }
 		}
 	}
-	return NULL;
+	return bestMove;
 			
 	
 }

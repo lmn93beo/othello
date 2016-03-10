@@ -34,6 +34,8 @@ public:
     int countWhite();
     void setTestingMinimax(bool val);
     
+    int numMoves(Side side);
+    
 	
 	float heuristic(Side side);
 	vector<Move*> legalMoves(Side side);
@@ -48,7 +50,7 @@ private:
     
     Board *board;
 	std::vector<Node*> children;
-	//float value;
+	float value;
 	Side own_side; // Ownside is making the next move
 	Side other_side;
 	Side master_side;
@@ -56,6 +58,7 @@ private:
     
 public:
     Node(Side side, Side master, Board *newboard);
+    ~Node();
     
     void insert(Board *board);
     void getNextLayer();
@@ -64,6 +67,7 @@ public:
     void printNode();
 	float minimax(int depth, bool maximizingPlayer);
 	Move *best_move(int depth, float best_val);
+    float getVal();
       
 };
 
