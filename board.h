@@ -35,6 +35,9 @@ public:
     void setTestingMinimax(bool val);
     
     int numMoves(Side side);
+    float mobility(Side side);
+    float corner_advantage(Side side);
+    float parity(Side side);
     
 	
 	float heuristic(Side side);

@@ -63,21 +63,33 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	Board *original = board->copy();
 	Node *myNode = new Node(own_side, own_side, original);
 	
-	// Do minimax
-	float val = myNode->minimax(5, true);
-	cerr << val << endl;
-	
-	// Get a possible move
-	Move *best = myNode->best_move(5, val);
-	
+    Move *best;
+    // If less than 1 min left, depth 2, else, depth 5
+    if (msLeft > 30000) {
+        // Do minimax
+        float val = myNode->minimax(5, true);
+        cerr << val << endl;
+
+        // Get a possible move
+        best = myNode->best_move(5, val);
+    }
+    //myNode->printNode();
+	else {
+        // Do minimax
+        float val = myNode->minimax(2, true);
+        cerr << val << endl;
+
+        // Get a possible move
+        best = myNode->best_move(2, val);
+    }
+    
+    
 	//sleep(1);
 	
 	board->doMove(best, own_side);
     
     // Clean up
-    //myNode->deleteNode();
     delete myNode;
-    
     
 	return best;
 	

@@ -1,6 +1,9 @@
 #include "board.h"
 #include <cstdio>
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
@@ -22,6 +25,31 @@ Board::Board(bool minimax) {
  */
 Board::~Board() {
 }
+
+float Board::mobility(Side side) {
+    Side other = (side == BLACK) ? (WHITE) : BLACK;
+    
+    if (numMoves(side) + numMoves(other) != 0) {
+        return float(numMoves(side) - numMoves(other)) / (numMoves(side) + numMoves(other));
+    } else {
+        return 0;
+    }
+}
+            
+float Board::corner_advantage(Side side) {
+    Side other = (side == BLACK) ? (WHITE) : BLACK;
+    int self_corners = get(side, 0, 0) + get(side, 0, 7) + get(side, 7, 0) + get(side, 7, 7);
+    int other_corners = get(other, 0, 0) + get(other, 0, 7) + get(other, 7, 0) + get(other, 7, 7);
+    
+    return self_corners - other_corners;
+}
+
+float Board::parity(Side side) {
+    Side other = (side == BLACK) ? (WHITE) : BLACK;
+    return float(count(side) - count(other)) / (count(side) + count(other));
+}
+
+       
 
 
 /* Returns a heuristic based on current configuration */
@@ -45,21 +73,23 @@ float Board::heuristic(Side side) {
     
     
     
-    int difference;
+    float difference;
     
 	if (side == WHITE) {
-		difference = count(WHITE) - count(BLACK);
+		difference = float(count(WHITE) - count(BLACK)) / (count(WHITE) + count(BLACK));
 	} 
 	else 
 	{
-		difference = count(BLACK) - count(WHITE);
+		difference = float(count(BLACK) - count(WHITE)) / (count(BLACK) + count(WHITE));
 	}
     
+    
     if (testingMinimax) {
-        return difference;
+        return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
     }
     else {
-        return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+        //return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+        return 10*mobility(side) + 50*corner_advantage(side) + parity(side);
     }
 }
 
@@ -340,6 +370,7 @@ void Node::printNode() {
 
 float Node::minimax(int depth, bool maximizingPlayer) {
 	if (depth == 0 || board->numMoves(own_side)== 0) {
+        value = board->heuristic(master_side);
 		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
 		return board->heuristic(master_side);
 	}
@@ -377,15 +408,20 @@ float Node::getVal() {
 Move* Node::best_move(int depth, float best_val) {
 	// Get the list of available moves
     vector<Move*> possible = board->legalMoves(own_side);
-	
-	printf("%d\n", (int)possible.size());
+    
+    for (unsigned int i = 0; i < possible.size(); i++) {
+        //cerr << possible[i]->x << ", " << possible[i]->y << endl;
+    }
+    
+	//cerr << possible.size() << endl;
+	//printf("%d\n", (int)possible.size());
 	Move *bestMove = NULL;
     
 	if (possible.size() == 0) {
 		return NULL;
 	} else {
 		for (unsigned int i = 0; i < possible.size(); i++) {
-            printf("Value of child: %f \n", children[i]->value);
+            //cerr << "Value of child: " << children[i]->value << endl;
 			if (bestMove == NULL && abs(children[i]->value - best_val) < 0.00001) {
 				bestMove = possible[i];
 			}
@@ -394,6 +430,8 @@ Move* Node::best_move(int depth, float best_val) {
             }
 		}
 	}
+    
+    //cerr << "Picked: " << bestMove->x << ", " << bestMove->y << endl;
 	return bestMove;
 			
 	
