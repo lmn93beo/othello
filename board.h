@@ -17,9 +17,11 @@ private:
     bool get(Side side, int x, int y);
     void set(Side side, int x, int y);
     bool onBoard(int x, int y);
+    bool testingMinimax;
+    
       
 public:
-    Board();
+    Board(bool minimax);
     ~Board();
     Board *copy();
         
@@ -30,11 +32,40 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
+    void setTestingMinimax(bool val);
+    
 	
 	float heuristic(Side side);
 	vector<Move*> legalMoves(Side side);
 
-    void setBoard(char data[]);
+    void setBoard(char data[], bool test);
+    
 };
+
+class Node
+{
+private:
+    
+    Board *board;
+	std::vector<Node*> children;
+	//float value;
+	Side own_side; // Ownside is making the next move
+	Side other_side;
+	Side master_side;
+	
+    
+public:
+    Node(Side side, Side master, Board *newboard);
+    
+    void insert(Board *board);
+    void getNextLayer();
+	void deleteNode();
+    //void deep_expand(int depth);
+    void printNode();
+	float minimax(int depth, bool maximizingPlayer);
+	Move *best_move(int depth, float best_val);
+      
+};
+
 
 #endif

@@ -19,13 +19,20 @@ int main(int argc, char *argv[]) {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
     };
-    Board *board = new Board();
-    board->setBoard(boardData);
+    Board *board = new Board(true);
+    board->setBoard(boardData, true);
+	
+	printf("Test board diff = %f\n", board->heuristic(WHITE));
 
     // Initialize player as the white player, and set testing_minimax flag.
     Player *player = new Player(WHITE);
+	
+	
+	
     player->testingMinimax = true;
+	//player->board->setTestingMinimax(true);
 	player->setBoard(boardData);
+	//player->setTree(board, 3);
 
 
     /** 
@@ -37,7 +44,7 @@ int main(int argc, char *argv[]) {
     Move *move = player->doMove(NULL, 0);
 
     if (move != NULL && move->x == 1 && move->y == 1) {
-        printf("Correct move: (1, 1)");
+        printf("Correct move: (1, 1)\n");
     } else {
         printf("Wrong move: got ");
         if (move == NULL) {

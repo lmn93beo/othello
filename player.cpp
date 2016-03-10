@@ -17,7 +17,7 @@ Player::Player(Side side) {
     own_side = side;
     other_side = (side == BLACK) ? WHITE : BLACK;
     
-    board = new Board();
+    board = new Board(testingMinimax);
     
 
     /* 
@@ -53,16 +53,29 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    //cerr << "Black: " << board->countBlack() << endl;
-    //cerr << "White: " << board->countWhite() << endl;
     
-    //cerr << "Opp move: " << opponentsMove->x << " " << opponentsMove->y << endl;
     
     // Make the opponent's move 
     
     board->doMove(opponentsMove, other_side);
     
-    
+	// Create a node
+	Board *original = board->copy();
+	Node *myNode = new Node(own_side, own_side, original);
+	
+	// Do minimax
+	float val = myNode->minimax(5, true);
+	//cerr << val << endl;
+	
+	// Get a possible move
+	Move *best = myNode->best_move(5, val);
+	
+	sleep(1);
+	
+	board->doMove(best, own_side);
+	return best;
+	
+    /*
     // Get the list of available moves
     vector<Move*> possible = board->legalMoves(own_side);
     //cerr << "Size is " << possible.size() << endl;
@@ -95,12 +108,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             board_1->doMove(op_choices[j], other_side);
 			
 			
-			if (testingMinimax) {
-				value = board_1->count(own_side) - board_1->count(other_side);
-			}
-			else {
-				value = board_1->heuristic(own_side);
-			}
+			value = board_1->heuristic(own_side);
+			
 			
 			if (value < min_val) {
 				min_val = value;
@@ -122,7 +131,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     
     // Make the move and return
     board->doMove(possible[best_move], own_side);
-    //sleep(2);
+    sleep(1);
       
     // Clean up
     for (unsigned int i = 0; i < possible.size(); i++) {
@@ -134,10 +143,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     
     
     return possible[best_move];
+	*/
 }
 
 // Set the board for the player
 void Player::setBoard(char data[]) {
-    board->setBoard(data);
+    board->setBoard(data, testingMinimax);
 }
+
 

@@ -17,6 +17,7 @@ public:
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 	void setBoard(char data[]);
+	void setTree(Board *board, int depth);
 	
 private:
 	Side own_side;

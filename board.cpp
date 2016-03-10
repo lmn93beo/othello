@@ -1,10 +1,11 @@
 #include "board.h"
 #include <cstdio>
+#include <cmath>
 
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
  */
-Board::Board() {
+Board::Board(bool minimax) {
     taken.set(3 + 8 * 3);
     taken.set(3 + 8 * 4);
     taken.set(4 + 8 * 3);
@@ -12,6 +13,8 @@ Board::Board() {
     black.set(4 + 8 * 3);
     black.set(3 + 8 * 4);
     //printf("Done?\n");
+    
+    testingMinimax = minimax;
 }
 
 /*
@@ -52,7 +55,12 @@ float Board::heuristic(Side side) {
 		difference = count(BLACK) - count(WHITE);
 	}
     
-    return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+    if (testingMinimax) {
+        return difference;
+    }
+    else {
+        return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+    }
 }
 
 /* Returns a vector of legal moves for side */
@@ -77,7 +85,7 @@ vector<Move*> Board::legalMoves(Side side) {
  * Returns a copy of this board.
  */
 Board *Board::copy() {
-    Board *newBoard = new Board();
+    Board *newBoard = new Board(testingMinimax);
     newBoard->black = black;
     newBoard->taken = taken;
     return newBoard;
@@ -221,7 +229,7 @@ int Board::countWhite() {
  * Sets the board state given an 8x8 char array where 'w' indicates a white
  * piece and 'b' indicates a black piece. Mainly for testing purposes.
  */
-void Board::setBoard(char data[]) {
+void Board::setBoard(char data[], bool test) {
     taken.reset();
     black.reset();
     for (int i = 0; i < 64; i++) {
@@ -232,4 +240,132 @@ void Board::setBoard(char data[]) {
             taken.set(i);
         }
     }
+    testingMinimax = test;
 }
+
+void Board::setTestingMinimax(bool val) {
+    testingMinimax = val;
+}
+
+
+// *********** THE NODE CLASS *******************
+Node::Node(Side side, Side master, Board *newboard)
+    {
+        
+        this->own_side = side;
+		this->other_side = (side == BLACK) ? WHITE : BLACK;
+		this->master_side = master;
+        board = newboard;
+        //printf("diff 0 of board = %f\n", board->heuristic(own_side));
+        //value = newboard->heuristic(master);
+    }
+    
+/** @brief Insert a node with a given board configuration as a child
+
+*/
+void Node::insert(Board *board) {
+    Node *newnode = new Node(other_side, master_side, board);
+    children.push_back(newnode);
+}
+
+/* Expand by inserting all possible moves */
+void Node::getNextLayer()
+{
+    // Get the list of available moves
+    vector<Move*> possible = board->legalMoves(own_side);
+    
+    // Go through the moves...
+    for (unsigned int i = 0; i < possible.size(); i++) {        
+        Board *next_board = board->copy();
+        next_board->doMove(possible[i], own_side);
+        insert(next_board);
+    }
+}
+
+void Node::deleteNode() // Clears the node's children list
+{
+    delete board;
+    for (unsigned int i = 0; i < children.size(); i++) {
+        if (children[i] != NULL) {
+            children[i]->deleteNode();
+        }
+        delete children[i];
+    }
+}
+
+void Node::printNode() {
+    //printf("Node: value = %f\n", value);
+    //printf("No. of children = %i\n", (int)children.size());
+    
+    for (unsigned int i = 0; i < children.size(); i++) {
+        children[i]->printNode();
+    }
+    
+}
+
+float Node::minimax(int depth, bool maximizingPlayer) {
+	if (depth == 0 || board->legalMoves(own_side).size() == 0) {
+		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
+		return board->heuristic(master_side);
+	}
+	
+	if (maximizingPlayer) {
+		float bestValue = -10000000;
+		getNextLayer();
+		for (unsigned int i = 0; i < children.size(); i++) {
+			float v = children[i]->minimax(depth - 1, false);
+			bestValue = max(bestValue, v);
+		}
+		//printf("Depth is %d, best value is %f\n", depth, bestValue);
+		return bestValue;
+	} else {
+		float bestValue = 10000000;
+		getNextLayer();
+		for (unsigned int i = 0; i < children.size(); i++) {
+			float v = children[i]->minimax(depth - 1, true);
+			bestValue = min(bestValue, v);
+		}
+		//printf("Depth is %d, best value is %f\n", depth, bestValue);
+		return bestValue;
+	}
+					
+	return 0;
+	
+}
+
+Move* Node::best_move(int depth, float best_val) {
+	// Get the list of available moves
+    vector<Move*> possible = board->legalMoves(own_side);
+	
+	//printf("%d\n", (int)possible.size());
+	
+	if (possible.size() == 0) {
+		return NULL;
+	} else {
+		for (unsigned int i = 0; i < possible.size(); i++) {
+			if (abs(children[i]->minimax(depth - 1, false) - best_val) < 0.01) {
+				return possible[i];
+			}
+		}
+	}
+	return NULL;
+			
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
