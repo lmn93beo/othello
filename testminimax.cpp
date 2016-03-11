@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 
     // Create board with example state. You do not necessarily need to use
     // this, but it's provided for convenience.
-    char boardData[64] = {
+    /*char boardData[64] = {
         ' ', 'w', 'w', ' ', 'b', ' ', ' ', ' ',
         ' ', ' ', 'w', 'w', 'b', ' ', ' ', ' ',
         ' ', ' ', 'w', 'w', 'b', 'b', ' ', ' ', 
@@ -18,28 +18,28 @@ int main(int argc, char *argv[]) {
         ' ', ' ', 'w', 'b', 'w', 'b', ' ', ' ', 
         ' ', ' ', 'w', 'w', ' ', ' ', ' ', ' ', 
         ' ', ' ', 'w', ' ', 'b', ' ', ' ', ' '
-    };
+    };*/
     
-    /*char boardData[64] = {
+    char boardData[64] = {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
+        ' ', 'b', ' ', ' ', ' ', ' ', ' ', ' ', 
+        'b', 'w', 'b', 'b', 'b', 'b', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
-        ' ', ' ', ' ', 'w', 'b', ' ', ' ', ' ', 
-        ' ', ' ', ' ', 'b', 'w', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
-    };*/ 
+    }; 
     
     
     
     Board *board = new Board(true);
     board->setBoard(boardData, true);
 	
-	printf("Test board diff = %f\n", board->heuristic(BLACK));
+	printf("Test board diff = %f\n", board->heuristic(WHITE));
 
     // Initialize player as the white player, and set testing_minimax flag.
-    Player *player = new Player(BLACK);
+    Player *player = new Player(WHITE);
 	
 	
 	
@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
      */
 
     // Get player's move and check if it's right.
+	printf("Testing...\n");
     Move *move = player->doMove(NULL, 0);
 
     if (move != NULL && move->x == 1 && move->y == 1) {

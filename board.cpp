@@ -46,6 +46,9 @@ float Board::corner_advantage(Side side) {
 
 float Board::parity(Side side) {
     Side other = (side == BLACK) ? (WHITE) : BLACK;
+	if (count(side) == 0) {
+		return -1000;
+	}
     return float(count(side) - count(other)) / (count(side) + count(other));
 }
 
@@ -55,7 +58,7 @@ float Board::parity(Side side) {
 /* Returns a heuristic based on current configuration */
 float Board::heuristic(Side side) {
     // Count corners
-    int corners = get(side, 0, 0) + get(side, 0, 7) + get(side, 7, 0) + get(side, 7, 7);
+    /*int corners = get(side, 0, 0) + get(side, 0, 7) + get(side, 7, 0) + get(side, 7, 7);
     
     // Count next to corners
     int corner_adj = get(side, 0, 1) + get(side, 1, 0) + get(side, 1, 1) +
@@ -71,21 +74,21 @@ float Board::heuristic(Side side) {
         intermediates += get(side, 1, i) + get(side, 6, i) + get(side, i, 1) + get(side, i, 6);
     }
     
-    
+    */
     
     float difference;
     
 	if (side == WHITE) {
-		difference = float(count(WHITE) - count(BLACK)) / (count(WHITE) + count(BLACK));
+		difference = float(count(WHITE) - count(BLACK));// / (count(WHITE) + count(BLACK));
 	} 
 	else 
 	{
-		difference = float(count(BLACK) - count(WHITE)) / (count(BLACK) + count(WHITE));
+		difference = float(count(BLACK) - count(WHITE)); // / (count(BLACK) + count(WHITE));
 	}
     
     
     if (testingMinimax) {
-        return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+        return difference; //10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
     }
     else {
         //return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
@@ -398,14 +401,71 @@ float Node::minimax(int depth, bool maximizingPlayer) {
 	}
 					
 	return 0;
-	
 }
+
+float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer) {
+	if (depth == 0 || board->numMoves(own_side)== 0) {
+        value = board->heuristic(master_side);
+		//cerr << "Leaf nodes: " << value << endl;
+		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
+		return board->heuristic(master_side);
+	}
+	
+	getNextLayer(); // Get next move
+	if (maximizingPlayer) {
+		//cerr << "Number of children: " << children.size() << endl;
+		for (unsigned int i = 0; i < children.size(); i++) {
+			//cerr << "Child " << i << endl;
+			float score = children[i]->ab(depth - 1, alpha, beta, false);
+			if (score > alpha) {
+				//cerr << "Updated alpha = " << score << endl;
+				alpha = score;
+			}
+			
+			if (score > beta) {
+				//cerr << "Beta pruned, score:" << score << ", beta: " << beta << endl;
+				break;
+			}
+		}
+		value = alpha;
+		return alpha;
+	} else {
+		for (unsigned int i = 0; i < children.size(); i++) {
+			float score = children[i]->ab(depth - 1, alpha, beta, true);
+			if (score < beta) {
+				//cerr << "Updated beta = " << score << endl;
+				beta = score;
+			}
+			
+			if (score < alpha) {
+				//cerr << "Alpha pruned, score:" << score << ", alpha: " << alpha << endl;
+				break;
+			}
+		}
+		value = beta;
+		return beta;
+	}
+	/*
+	for (unsigned int i = 0; i < children.size(); i++) {
+		float score = -children[i]->ab(depth - 1, -beta, -alpha);
+		if (score > alpha) {
+			alpha = score;
+		}
+		
+		if (score > beta) {
+			break;
+		}
+	}
+	value = alpha;
+	return alpha;*/
+}
+
 
 float Node::getVal() {
     return value;
 }
 
-Move* Node::best_move(int depth, float best_val) {
+Move* Node::best_move(float best_val) {
 	// Get the list of available moves
     vector<Move*> possible = board->legalMoves(own_side);
     

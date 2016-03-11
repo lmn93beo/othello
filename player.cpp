@@ -54,7 +54,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * process the opponent's opponents move before calculating your own move
      */ 
     
-    
+    cerr << msLeft << endl;
     // Make the opponent's move 
     
     board->doMove(opponentsMove, other_side);
@@ -65,13 +65,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	
     Move *best;
     // If less than 1 min left, depth 2, else, depth 5
-    if (msLeft > 30000) {
+    if (msLeft > 30000 || msLeft <= 0) {
         // Do minimax
-        float val = myNode->minimax(5, true);
-        cerr << val << endl;
+		//printf("Testing minimax\n");
+        //float val = myNode->minimax(4, true);
+		
+		//printf("Testing ab\n");
+        float val = myNode->ab(6, -100000, 100000, true);
+		//cerr << "Value: " << val << endl;
 
         // Get a possible move
-        best = myNode->best_move(5, val);
+        best = myNode->best_move(val);
     }
     //myNode->printNode();
 	else {
@@ -80,7 +84,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         cerr << val << endl;
 
         // Get a possible move
-        best = myNode->best_move(2, val);
+        best = myNode->best_move(val);
     }
     
     
@@ -92,6 +96,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     delete myNode;
     
 	return best;
+	//return NULL;
 	
 }
 

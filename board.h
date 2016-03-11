@@ -69,7 +69,8 @@ public:
     //void deep_expand(int depth);
     void printNode();
 	float minimax(int depth, bool maximizingPlayer);
-	Move *best_move(int depth, float best_val);
+	float ab(int depth, float alpha, float beta, bool maximizingPlayer);
+	Move *best_move(float best_val);
     float getVal();
       
 };
