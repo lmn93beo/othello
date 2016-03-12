@@ -18,11 +18,11 @@ public:
     bool testingMinimax;
 	void setBoard(char data[]);
 	void setTree(Board *board, int depth);
+	Board *board;
 	
 private:
 	Side own_side;
 	Side other_side;
-	Board *board;
 };
 
 #endif

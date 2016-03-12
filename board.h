@@ -53,7 +53,6 @@ private:
     
     Board *board;
 	std::vector<Node*> children;
-	float value;
 	Side own_side; // Ownside is making the next move
 	Side other_side;
 	Side master_side;
@@ -64,14 +63,10 @@ public:
     ~Node();
     
     void insert(Board *board);
-    void getNextLayer();
 	void deleteNode();
-    //void deep_expand(int depth);
     void printNode();
-	float minimax(int depth, bool maximizingPlayer);
-	float ab(int depth, float alpha, float beta, bool maximizingPlayer);
-	Move *best_move(float best_val);
-    float getVal();
+	float ab(int depth, float alpha, float beta, bool maximizingPlayer, Move* move);
+    
       
 };
 

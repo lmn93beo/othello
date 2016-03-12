@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     // Get player's move and check if it's right.
 	printf("Testing...\n");
-    Move *move = player->doMove(NULL, 0);
+    Move *move = player->doMove(NULL, 30000);
 
     if (move != NULL && move->x == 1 && move->y == 1) {
         printf("Correct move: (1, 1)\n");

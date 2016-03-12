@@ -26,7 +26,6 @@ Player::Player(Side side) {
      * 30 seconds.
      */
     
-
 }
 
 /*
@@ -53,8 +52,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    
-    cerr << msLeft << endl;
+    //unsigned t0 = clock(), t1;
+    //cerr << msLeft << endl;
     // Make the opponent's move 
     
     board->doMove(opponentsMove, other_side);
@@ -63,41 +62,49 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	Board *original = board->copy();
 	Node *myNode = new Node(own_side, own_side, original);
 	
-    Move *best;
-    // If less than 1 min left, depth 2, else, depth 5
-    if (msLeft > 30000 || msLeft <= 0) {
-        // Do minimax
-		//printf("Testing minimax\n");
-        //float val = myNode->minimax(4, true);
-		
-		//printf("Testing ab\n");
-        float val = myNode->ab(6, -100000, 100000, true);
-		//cerr << "Value: " << val << endl;
+    Move *best = new Move(0,0);
+    // If more than 5 min left, default depth 8, else, do deepening
+    float val;
+	//int depth_to_search = 7;
+	/*while (true) {
+		// Do minimax
+		float val;
 
-        // Get a possible move
-        best = myNode->best_move(val);
-    }
-    //myNode->printNode();
-	else {
-        // Do minimax
-        float val = myNode->minimax(2, true);
-        cerr << val << endl;
+		cerr << "Trying depth of " << depth_to_search << endl;
 
-        // Get a possible move
-        best = myNode->best_move(val);
-    }
+		try {
+			val = myNode->ab(depth_to_search, -100000, 100000, true);
+		} catch (const std::bad_alloc& e) {
+			val = -100000;
+			cerr << "Something wrong.. " << endl;
+		}
+
+		//t1 = clock();
+		//cerr << float(t1 - t0) / CLOCKS_PER_SEC * 1000 << endl;
+
+		if (val == -100000 || depth_to_search > 6) {//float(t1 - t0) / CLOCKS_PER_SEC * 1000 > msLeft) {
+			break;
+		}
+		else {
+			// Get a possible move
+			best = myNode->best_move(val);
+
+			depth_to_search += 1;
+		}
+    }*/
     
-    
-	//sleep(1);
+	if (board->count(own_side) < 6) {
+		val = myNode->ab(6, -100000, 100000, true, best);
+	}
 	
+	else {
+		val = myNode->ab(6, -100000, 100000, true, best);
+	} 
 	board->doMove(best, own_side);
-    
+	
     // Clean up
     delete myNode;
-    
 	return best;
-	//return NULL;
-	
 }
 
 // Set the board for the player

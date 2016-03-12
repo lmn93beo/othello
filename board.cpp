@@ -15,7 +15,6 @@ Board::Board(bool minimax) {
     taken.set(4 + 8 * 4);
     black.set(4 + 8 * 3);
     black.set(3 + 8 * 4);
-    //printf("Done?\n");
     
     testingMinimax = minimax;
 }
@@ -304,13 +303,10 @@ void Board::setTestingMinimax(bool val) {
 // *********** THE NODE CLASS *******************
 Node::Node(Side side, Side master, Board *newboard)
     {
-        
         this->own_side = side;
 		this->other_side = (side == BLACK) ? WHITE : BLACK;
 		this->master_side = master;
         board = newboard;
-        //printf("diff 0 of board = %f\n", board->heuristic(own_side));
-        //value = newboard->heuristic(master);
     }
 
 Node::~Node() {
@@ -319,9 +315,7 @@ Node::~Node() {
         if (children[i] != NULL) {
             delete children[i];
         }
-        //delete children[i];
     }
-    
 }
 
 /** @brief Insert a node with a given board configuration as a child
@@ -331,28 +325,10 @@ void Node::insert(Board *board) {
     children.push_back(newnode);
 }
 
-/* Expand by inserting all possible moves */
-void Node::getNextLayer()
-{
-    // Get the list of available moves
-    vector<Move*> possible = board->legalMoves(own_side);
-    
-    // Go through the moves...
-    for (unsigned int i = 0; i < possible.size(); i++) {        
-        Board *next_board = board->copy();
-        next_board->doMove(possible[i], own_side);
-        insert(next_board);
-    }
-    
-    // Clean up
-    for (unsigned int i = 0; i < possible.size(); i++) {
-        delete possible[i];
-    }
-}
 
 void Node::deleteNode() // Clears the node's children list
 {
-    delete board;
+	delete board;
     for (unsigned int i = 0; i < children.size(); i++) {
         if (children[i] != NULL) {
             children[i]->deleteNode();
@@ -362,141 +338,71 @@ void Node::deleteNode() // Clears the node's children list
 }
 
 void Node::printNode() {
-    //printf("Node: value = %f\n", value);
-    //printf("No. of children = %i\n", (int)children.size());
-    
     for (unsigned int i = 0; i < children.size(); i++) {
         children[i]->printNode();
     }
     
 }
 
-float Node::minimax(int depth, bool maximizingPlayer) {
-	if (depth == 0 || board->numMoves(own_side)== 0) {
-        value = board->heuristic(master_side);
-		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
-		return board->heuristic(master_side);
-	}
-	
-	if (maximizingPlayer) {
-		float bestValue = -10000000;
-		getNextLayer();
-		for (unsigned int i = 0; i < children.size(); i++) {
-			float v = children[i]->minimax(depth - 1, false);
-			bestValue = max(bestValue, v);
-		}
-        value = bestValue;
-		//printf("Depth is %d, best value is %f\n", depth, bestValue);
-		return bestValue;
-	} else {
-		float bestValue = 10000000;
-		getNextLayer();
-		for (unsigned int i = 0; i < children.size(); i++) {
-			float v = children[i]->minimax(depth - 1, true);
-			bestValue = min(bestValue, v);
-		}
-        value = bestValue;
-		//printf("Depth is %d, best value is %f\n", depth, bestValue);
-		return bestValue;
-	}
-					
-	return 0;
-}
 
-float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer) {
+float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *move) {
 	if (depth == 0 || board->numMoves(own_side)== 0) {
-        value = board->heuristic(master_side);
-		//cerr << "Leaf nodes: " << value << endl;
-		//printf("Depth is %d, black = %d, white = %d\n", depth, board->countBlack(), board->countWhite());
 		return board->heuristic(master_side);
 	}
 	
-	getNextLayer(); // Get next move
+	// Get the list of available moves
+    vector<Move*> possible = board->legalMoves(own_side);
+    
+    // Go through the moves...
+    for (unsigned int i = 0; i < possible.size(); i++) {        
+        Board *next_board = board->copy();
+        next_board->doMove(possible[i], own_side);
+        insert(next_board);
+    }
+	
+	Move *dummy = NULL;
+	
+	// Get next move
 	if (maximizingPlayer) {
-		//cerr << "Number of children: " << children.size() << endl;
 		for (unsigned int i = 0; i < children.size(); i++) {
-			//cerr << "Child " << i << endl;
-			float score = children[i]->ab(depth - 1, alpha, beta, false);
+			float score = children[i]->ab(depth - 1, alpha, beta, false, dummy);
 			if (score > alpha) {
-				//cerr << "Updated alpha = " << score << endl;
 				alpha = score;
+				if (move != NULL) {
+					move->setX(possible[i]->x);
+					move->setY(possible[i]->y);
+				}
 			}
 			
 			if (score > beta) {
-				//cerr << "Beta pruned, score:" << score << ", beta: " << beta << endl;
 				break;
 			}
 		}
-		value = alpha;
+		
+		
+		for (unsigned int i = 0; i < possible.size(); i++) {
+        	delete possible[i];
+    	}
+		
 		return alpha;
 	} else {
 		for (unsigned int i = 0; i < children.size(); i++) {
-			float score = children[i]->ab(depth - 1, alpha, beta, true);
+			float score = children[i]->ab(depth - 1, alpha, beta, true, move);
 			if (score < beta) {
-				//cerr << "Updated beta = " << score << endl;
 				beta = score;
 			}
 			
 			if (score < alpha) {
-				//cerr << "Alpha pruned, score:" << score << ", alpha: " << alpha << endl;
 				break;
 			}
 		}
-		value = beta;
+		
+		for (unsigned int i = 0; i < possible.size(); i++) {
+			delete possible[i];
+		}
 		return beta;
 	}
-	/*
-	for (unsigned int i = 0; i < children.size(); i++) {
-		float score = -children[i]->ab(depth - 1, -beta, -alpha);
-		if (score > alpha) {
-			alpha = score;
-		}
-		
-		if (score > beta) {
-			break;
-		}
-	}
-	value = alpha;
-	return alpha;*/
 }
-
-
-float Node::getVal() {
-    return value;
-}
-
-Move* Node::best_move(float best_val) {
-	// Get the list of available moves
-    vector<Move*> possible = board->legalMoves(own_side);
-    
-    for (unsigned int i = 0; i < possible.size(); i++) {
-        //cerr << possible[i]->x << ", " << possible[i]->y << endl;
-    }
-    
-	//cerr << possible.size() << endl;
-	//printf("%d\n", (int)possible.size());
-	Move *bestMove = NULL;
-    
-	if (possible.size() == 0) {
-		return NULL;
-	} else {
-		for (unsigned int i = 0; i < possible.size(); i++) {
-            //cerr << "Value of child: " << children[i]->value << endl;
-			if (bestMove == NULL && abs(children[i]->value - best_val) < 0.00001) {
-				bestMove = possible[i];
-			}
-            else {
-                delete possible[i];
-            }
-		}
-	}
-    
-    //cerr << "Picked: " << bestMove->x << ", " << bestMove->y << endl;
-	return bestMove;
-			
-	
-}
-
 
 
 
