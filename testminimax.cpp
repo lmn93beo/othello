@@ -9,17 +9,17 @@ int main(int argc, char *argv[]) {
 
     // Create board with example state. You do not necessarily need to use
     // this, but it's provided for convenience.
-    /*char boardData[64] = {
-        ' ', 'w', 'w', ' ', 'b', ' ', ' ', ' ',
-        ' ', ' ', 'w', 'w', 'b', ' ', ' ', ' ',
-        ' ', ' ', 'w', 'w', 'b', 'b', ' ', ' ', 
-        ' ', ' ', 'w', 'b', 'b', 'b', ' ', ' ', 
-        ' ', ' ', 'w', 'w', 'b', 'b', ' ', ' ', 
-        ' ', ' ', 'w', 'b', 'w', 'b', ' ', ' ', 
-        ' ', ' ', 'w', 'w', ' ', ' ', ' ', ' ', 
-        ' ', ' ', 'w', ' ', 'b', ' ', ' ', ' '
-    };*/
-    
+    char boardData[64] = {
+        'b', 'w', 'w', 'w', 'w', 'w', 'w', 'w',
+        'b', 'w', 'w', 'w', 'w', 'w', 'w', 'w',
+        'b', 'w', 'b', 'w', 'b', 'w', 'w', 'w', 
+        'b', 'w', 'w', 'b', 'b', 'b', 'b', 'b', 
+        'b', 'w', 'b', 'w', 'b', 'b', 'b', 'b', 
+        'b', 'w', 'w', 'b', 'b', 'b', 'b', 'b', 
+        'b', 'w', 'b', 'b', 'b', 'b', 'b', ' ', 
+        'b', 'w', 'b', 'b', 'b', 'b', 'w', ' '
+    };
+    /*
     char boardData[64] = {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
-    }; 
+    };*/ 
     
     
     
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	
 	
 	
-    player->testingMinimax = true;
+    player->testingMinimax = false;
 	//player->board->setTestingMinimax(true);
 	player->setBoard(boardData);
 	//player->setTree(board, 3);

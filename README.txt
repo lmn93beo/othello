@@ -6,6 +6,9 @@ on number of coins.
 
 I first implemented minimax, then implemented alpha-beta pruning to speed up
 the computation. I tried a depth of 6 and observed a fast performance. However,
-when the depth is increased to 7, there was a bad_alloc error, which I couldn't 
-solve. Since the depth was not too deep, I didn't feel the need to implement
-iterative deepening.
+when the depth is increased to 7, there was a bad_alloc error, which was due to
+a memory allocation issue. 
+
+I fixed the issue and implemented iterative deepening. I allocated little time
+at the beginning and more time in the middle game, and decreased the time again
+towards the endgame when the number of moves is quite small.

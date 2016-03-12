@@ -52,7 +52,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    //unsigned t0 = clock(), t1;
+	cerr << "Started " << endl;
+	time_t t0;
+	time(&t0);  /* get current time */
+	
+    //unsigned t0 = clock();
     //cerr << msLeft << endl;
     // Make the opponent's move 
     
@@ -63,48 +67,69 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	Node *myNode = new Node(own_side, own_side, original);
 	
     Move *best = new Move(0,0);
+	Move *to_return = new Move(0,0);
     // If more than 5 min left, default depth 8, else, do deepening
-    float val;
-	//int depth_to_search = 7;
-	/*while (true) {
-		// Do minimax
-		float val;
-
-		cerr << "Trying depth of " << depth_to_search << endl;
-
-		try {
-			val = myNode->ab(depth_to_search, -100000, 100000, true);
-		} catch (const std::bad_alloc& e) {
-			val = -100000;
-			cerr << "Something wrong.. " << endl;
-		}
-
-		//t1 = clock();
-		//cerr << float(t1 - t0) / CLOCKS_PER_SEC * 1000 << endl;
-
-		if (val == -100000 || depth_to_search > 6) {//float(t1 - t0) / CLOCKS_PER_SEC * 1000 > msLeft) {
-			break;
+	
+	
+	int depth = 4;
+	int time_allowed, max_depth;
+	float val;
+	int num_moves = (board->count(BLACK) + board->count(WHITE) - 4) / 2;
+	
+	if (num_moves < 3) {
+		time_allowed = 10000;
+		max_depth = 7;
+	}
+	else if (num_moves < 6) {
+		time_allowed = 30000;
+		max_depth = 7;
+	}
+	else if (num_moves < 16) {
+		time_allowed = 60000;
+		max_depth = 7;
+	} 
+	else {
+		time_allowed = 17000;
+		max_depth = 34 - num_moves;
+	}
+		
+	while (true) {
+		val = myNode->ab(depth, -100000, 100000, true, best, time_allowed, t0);
+		if (int(val) != -1000000 && depth <= max_depth) {
+			to_return->x = best->x;
+			to_return->y = best->y;
+			cerr << "Completed depth " << depth << endl;
+            //cerr << "Max depth " << max_depth << endl;
+			depth += 1;
 		}
 		else {
-			// Get a possible move
-			best = myNode->best_move(val);
-
-			depth_to_search += 1;
+			board->doMove(to_return, own_side);
+            
+            
+            // Trigger testminimax mode towards endgame
+            if (depth > max_depth && num_moves >= 16) {
+                cerr << "Minimax triggered" << endl;
+                testingMinimax = true;
+            }
+	
+			// Clean up
+			//cerr << "Here" << endl;
+			delete myNode;
+			delete best;
+			
+			return to_return;
 		}
-    }*/
-    
-	if (board->count(own_side) < 6) {
-		val = myNode->ab(6, -100000, 100000, true, best);
 	}
 	
-	else {
-		val = myNode->ab(6, -100000, 100000, true, best);
-	} 
-	board->doMove(best, own_side);
+	/*if (int(val) == -1000000){
+		return NULL;
+	}*/
+	/*board->doMove(to_return, own_side);
 	
     // Clean up
+	//cerr << "Here" << endl;
     delete myNode;
-	return best;
+	return best;*/
 }
 
 // Set the board for the player

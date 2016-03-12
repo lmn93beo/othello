@@ -29,7 +29,7 @@ float Board::mobility(Side side) {
     Side other = (side == BLACK) ? (WHITE) : BLACK;
     
     if (numMoves(side) + numMoves(other) != 0) {
-        return float(numMoves(side) - numMoves(other)) / (numMoves(side) + numMoves(other));
+        return float(numMoves(side) - numMoves(other)); // / (numMoves(side) + numMoves(other));
     } else {
         return 0;
     }
@@ -48,7 +48,7 @@ float Board::parity(Side side) {
 	if (count(side) == 0) {
 		return -1000;
 	}
-    return float(count(side) - count(other)) / (count(side) + count(other));
+    return float(count(side) - count(other)); // / (count(side) + count(other));
 }
 
        
@@ -73,7 +73,7 @@ float Board::heuristic(Side side) {
         intermediates += get(side, 1, i) + get(side, 6, i) + get(side, i, 1) + get(side, i, 6);
     }
     
-    */
+    
     
     float difference;
     
@@ -83,15 +83,16 @@ float Board::heuristic(Side side) {
 	else 
 	{
 		difference = float(count(BLACK) - count(WHITE)); // / (count(BLACK) + count(WHITE));
-	}
+	}*/
     
     
     if (testingMinimax) {
-        return difference; //10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+        return parity(side); //10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
     }
     else {
         //return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
-        return 10*mobility(side) + 50*corner_advantage(side) + parity(side);
+        return 10*mobility(side) + 300*corner_advantage(side) + parity(side);
+		
     }
 }
 
@@ -338,14 +339,23 @@ void Node::deleteNode() // Clears the node's children list
 }
 
 void Node::printNode() {
-    for (unsigned int i = 0; i < children.size(); i++) {
-        children[i]->printNode();
-    }
-    
+    cerr << "number of children: " << children.size() << endl;
 }
 
 
-float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *move) {
+float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *move,
+			  int msLeft, time_t t0) {
+	//cerr << "Depth: " << depth << endl;
+	// Time checking
+	time_t t1;
+	time(&t1);
+	double seconds = difftime(t1,t0);
+	//cerr << seconds* 1000 << " " <<  msLeft << endl;
+	if (seconds * 1000 + 3000 > msLeft) {
+		return -1000000;
+	}
+	
+	
 	if (depth == 0 || board->numMoves(own_side)== 0) {
 		return board->heuristic(master_side);
 	}
@@ -360,15 +370,19 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
         insert(next_board);
     }
 	
-	Move *dummy = NULL;
 	
 	// Get next move
 	if (maximizingPlayer) {
 		for (unsigned int i = 0; i < children.size(); i++) {
-			float score = children[i]->ab(depth - 1, alpha, beta, false, dummy);
+			float score = children[i]->ab(depth - 1, alpha, beta, false, NULL,
+										 msLeft, t0);
+		
+			
+			
 			if (score > alpha) {
 				alpha = score;
 				if (move != NULL) {
+					//cerr << "Setting move to be " << possible[i]->x << " " << possible[i]->y << endl;
 					move->setX(possible[i]->x);
 					move->setY(possible[i]->y);
 				}
@@ -379,6 +393,11 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 			}
 		}
 		
+		for (unsigned int i = 0; i < children.size(); i++) {
+			delete children[i];
+		}
+		
+		children.clear();
 		
 		for (unsigned int i = 0; i < possible.size(); i++) {
         	delete possible[i];
@@ -387,7 +406,8 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 		return alpha;
 	} else {
 		for (unsigned int i = 0; i < children.size(); i++) {
-			float score = children[i]->ab(depth - 1, alpha, beta, true, move);
+			float score = children[i]->ab(depth - 1, alpha, beta, true, NULL,
+										 msLeft, t0);
 			if (score < beta) {
 				beta = score;
 			}
@@ -396,6 +416,11 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 				break;
 			}
 		}
+		
+		for (unsigned int i = 0; i < children.size(); i++) {
+			delete children[i];
+		}
+		children.clear();
 		
 		for (unsigned int i = 0; i < possible.size(); i++) {
 			delete possible[i];

@@ -65,7 +65,8 @@ public:
     void insert(Board *board);
 	void deleteNode();
     void printNode();
-	float ab(int depth, float alpha, float beta, bool maximizingPlayer, Move* move);
+	float ab(int depth, float alpha, float beta, bool maximizingPlayer, Move* move,
+			int msLeft, time_t t0);
     
       
 };
