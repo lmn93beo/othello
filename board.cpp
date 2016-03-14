@@ -91,7 +91,7 @@ float Board::heuristic(Side side) {
     }
     else {
         //return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
-        return 10*mobility(side) + 300*corner_advantage(side) + parity(side);
+        return 10*mobility(side) + 100*corner_advantage(side) + parity(side);
 		
     }
 }
@@ -352,6 +352,7 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 	double seconds = difftime(t1,t0);
 	//cerr << seconds* 1000 << " " <<  msLeft << endl;
 	if (seconds * 1000 + 3000 > msLeft) {
+		cerr << "Burned " << endl;
 		return -1000000;
 	}
 	
@@ -376,7 +377,9 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 		for (unsigned int i = 0; i < children.size(); i++) {
 			float score = children[i]->ab(depth - 1, alpha, beta, false, NULL,
 										 msLeft, t0);
-		
+			if (score == -1000000) {
+				return score;
+			}
 			
 			
 			if (score > alpha) {
@@ -408,6 +411,10 @@ float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *
 		for (unsigned int i = 0; i < children.size(); i++) {
 			float score = children[i]->ab(depth - 1, alpha, beta, true, NULL,
 										 msLeft, t0);
+			if (score == -1000000) {
+				return score;
+			}
+			
 			if (score < beta) {
 				beta = score;
 			}
