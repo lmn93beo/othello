@@ -89,7 +89,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 		max_depth = 7;
 	} 
 	else if (num_moves < 25) {
-        time_allowed = 20000;
+        time_allowed = msLeft / (30 - num_moves) * 2;
+		cerr << "Time: " << time_allowed << endl;
         
 		max_depth = 64 - (board->count(BLACK) + board->count(WHITE));
         depth = min(5, max_depth);
