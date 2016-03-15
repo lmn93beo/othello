@@ -52,9 +52,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-	cerr << "Started, ms left = " << msLeft << endl;
-	time_t t0;
-	time(&t0);  /* get current time */
+	clock_t t0;
+	t0 = clock();  /* get current time */
 	
     board->doMove(opponentsMove, other_side);
     
@@ -64,59 +63,74 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	
     Move *best = new Move(0,0);
 	Move *to_return = new Move(0,0);
-    // If more than 5 min left, default depth 8, else, do deepening
 	
 	
 	int depth;
 	int time_allowed, max_depth;
 	float val;
+    
+    // Current move number
 	int num_moves = (board->count(BLACK) + board->count(WHITE) - 4) / 2;
-	
+    
+    // Allocate time and maximum depth based on number of moves	
 	if (num_moves < 3) {
-        depth = 5;
-		time_allowed = 10000;
-		max_depth = 10;
+        depth = 6;
+		time_allowed = 20000;
+		max_depth = 6;
 	}
 	else if (num_moves < 6) {
         depth = 5;
 		time_allowed = 30000;
 		max_depth = 9;
 	}
-	else if (num_moves < 16) {
+	else if (num_moves < 18) {
         depth = 5;
 		time_allowed = 60000;
-		max_depth = 9;
+		max_depth = 15;
 	} 
-	else {
-        if (msLeft < 0) {
-            time_allowed = 17000;
-        } else {   
-		    time_allowed = msLeft / (30 - num_moves) * 1.5;
-        }
-        cerr << "Time allowed = " << endl;
+	else if (num_moves < 25) {
+        time_allowed = 18000;
+        
 		max_depth = 64 - (board->count(BLACK) + board->count(WHITE));
         depth = min(5, max_depth);
 	}
-		
+    else {
+        time_allowed = msLeft / num_moves;
+        max_depth = 64 - (board->count(BLACK) + board->count(WHITE));
+        depth = min(5, max_depth);
+    }
+    
+  		
 	while (true) {
 		val = myNode->ab(depth, -100000, 100000, true, best, time_allowed, t0);
-        cerr << "Val is " << val << ", depth is " << depth << endl;
-		if (int(val) > -900000 && depth <= max_depth) {
+        cerr << "Depth completed: " << depth << endl;
+		if (int(val) > -900000) {
 			to_return->x = best->x;
 			to_return->y = best->y;
-			cerr << "Completed depth " << depth << endl;
+			
+				if (depth >= max_depth) {
+					if (num_moves >= 16) {
+						cerr << "Minimax triggered" << endl;
+						testingMinimax = true;
+					}
+					board->doMove(to_return, own_side);
+                    
+					// Clean up
+					delete myNode;
+					delete best;
+
+					return to_return;
+				}
 			depth += 1;
 		}
 		else {
 			board->doMove(to_return, own_side);
-            
-            
+          
             // Trigger testminimax mode towards endgame
             if (depth > max_depth && num_moves >= 16) {
                 cerr << "Minimax triggered" << endl;
                 testingMinimax = true;
             }
-	
 			// Clean up
 			delete myNode;
 			delete best;
@@ -130,5 +144,3 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 void Player::setBoard(char data[]) {
     board->setBoard(data, testingMinimax);
 }
-
-

@@ -57,40 +57,11 @@ float Board::parity(Side side) {
 /* Returns a heuristic based on current configuration */
 float Board::heuristic(Side side) {
     // Count corners
-    /*int corners = get(side, 0, 0) + get(side, 0, 7) + get(side, 7, 0) + get(side, 7, 7);
-    
-    // Count next to corners
-    int corner_adj = get(side, 0, 1) + get(side, 1, 0) + get(side, 1, 1) +
-        get(side, 0, 6) + get(side, 1, 7) + get(side, 1, 6) +
-        get(side, 6, 0) + get(side, 7, 1) + get(side, 6, 1) +
-        get(side, 6, 6) + get(side, 6, 7) + get(side, 7, 6);
-    
-    // Count sides and next to sides
-    int sides = 0;
-    int intermediates = 0;
-    for (int i = 1; i < 7; i++) {
-        sides += get(side, 0, i) + get(side, 7, i) + get(side, i, 0) + get(side, i, 7);
-        intermediates += get(side, 1, i) + get(side, 6, i) + get(side, i, 1) + get(side, i, 6);
-    }
-    
-    
-    
-    float difference;
-    
-	if (side == WHITE) {
-		difference = float(count(WHITE) - count(BLACK));// / (count(WHITE) + count(BLACK));
-	} 
-	else 
-	{
-		difference = float(count(BLACK) - count(WHITE)); // / (count(BLACK) + count(WHITE));
-	}*/
-    
-    
+
     if (testingMinimax) {
-        return parity(side); //10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
+        return parity(side);
     }
     else {
-        //return 10 * corners - 4 * corner_adj + 5 * sides - 2 * intermediates + 0.1 * difference;
         return 10*mobility(side) + 100*corner_advantage(side) + parity(side);
 		
     }
@@ -103,7 +74,6 @@ vector<Move*> Board::legalMoves(Side side) {
         for (int j = 0; j < 8; j++) {
             Move *move = new Move(i, j);
             if (checkMove(move, side)) {
-                //printf("Yup %d %d\n", i, j);
                 move_list.push_back(move);
             }
             else {
@@ -111,9 +81,6 @@ vector<Move*> Board::legalMoves(Side side) {
             }
         }
     }
-    //for (unsigned int i = 0; i < move_list.size(); i++) {
-        //printf("Move: %d, %d\n", move_list[i]->x, move_list[i]->y);
-    //}
     return move_list;
 }
 
@@ -345,14 +312,12 @@ void Node::printNode() {
 
 float Node::ab(int depth, float alpha, float beta, bool maximizingPlayer, Move *move,
 			  int msLeft, time_t t0) {
-	//cerr << "Depth: " << depth << endl;
 	// Time checking
-	time_t t1;
-	time(&t1);
-	double seconds = difftime(t1,t0);
-	//cerr << seconds* 1000 << " " <<  msLeft << endl;
-	if (seconds * 1000 + 3000 > msLeft) {
-		cerr << "Burned " << endl;
+	clock_t t1;
+	t1 = clock();
+	float seconds = float(t1 - t0) / CLOCKS_PER_SEC;
+	
+	if (seconds * 1000 > msLeft) {
 		return -1000000;
 	}
 	
